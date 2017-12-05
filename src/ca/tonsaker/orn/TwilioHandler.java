@@ -33,18 +33,17 @@ public class TwilioHandler implements ActionListener{
 
     public void sendNotification(String name, String toNumber, DefaultListModel<String> list){
         String body;
-        if(!name.equals("")){
-            System.out.println("NOMBRE: "+name);
+        if(name.equals("")){
             body = "Your order is ready!!!\n\n";
         }else{
-            body = "Hey " + name + "! Your order is ready!!!:\n\n";
+            body = "Hey " + name + "! Your order is ready!!!:\n* * * * * *\n";
         }
         StringBuilder orderList = new StringBuilder();
         for(Object s : list.toArray()){
             orderList.append(s.toString()+"\n");
         }
         body += orderList.toString();
-        body += "\nSee you soon! :)\n" +
+        body += "* * * * * *\nSee you soon! :)\n" +
                 "- "+ cfgData.COMPANY_NAME;
 
         //TODO Format with Country code ie +1

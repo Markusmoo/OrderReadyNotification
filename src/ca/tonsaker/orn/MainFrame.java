@@ -1,6 +1,7 @@
 package ca.tonsaker.orn;
 
 import ca.tonsaker.orn.extraguis.FinishedOrderInfo;
+import ca.tonsaker.orn.extraguis.ProgressOrderInfo;
 import com.bulenkov.darcula.DarculaLaf;
 import ca.tonsaker.orn.extraguis.OrderInfo;
 
@@ -52,8 +53,11 @@ public class MainFrame extends JFrame implements ActionListener{
 
     public static TwilioHandler twilioHandler;
 
-    public static ArrayList<OrderInfo> orderInfoArrayList = new ArrayList<>();
+    public static ArrayList<ProgressOrderInfo> progressOrderInfoArrayList = new ArrayList<>();
+    public static JPanel accessOrderProgressPanel;
+
     public static ArrayList<FinishedOrderInfo> finishedOrderInfoArrayList = new ArrayList<>();
+    public static JPanel accessOrderFinishedPanel;
 
     public static void main(String[] args){
         EventQueue.invokeLater(new Runnable() {
@@ -74,12 +78,13 @@ public class MainFrame extends JFrame implements ActionListener{
     }
 
     /**
+     * TODO Default to maximized window
      * Creates and opens the POS window.
      */
     public MainFrame(){
         super("Window");
         this.setContentPane(mainPanel);
-        this.setBounds(100,100,800,600);
+        this.setBounds(100,100,1000,600);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.pack();
 
@@ -98,6 +103,11 @@ public class MainFrame extends JFrame implements ActionListener{
         list_settingsMenuItems.setModel(settingsMenuItemsModel);
         list_placeOrder.setModel(placeOrderModel);
         list_itemsPlacedOrder.setModel(placedItemOrderModel);
+
+        MainFrame.accessOrderFinishedPanel = orderFinishedPanel;
+        MainFrame.accessOrderProgressPanel = orderProgressPanel;
+        orderFinishedPanel.add(Box.createVerticalStrut(10));
+        orderProgressPanel.add(Box.createVerticalStrut(10));
 
         cfgData = new CFGData();
         cfgData.loadCFG();
@@ -128,9 +138,17 @@ public class MainFrame extends JFrame implements ActionListener{
     }
 
     private void updateStopwatchTimers(){
-        for(OrderInfo info : orderInfoArrayList){
+        for(OrderInfo info : progressOrderInfoArrayList){
             info.updateClock();
         }
+    }
+
+    public void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
+        progressOrderInfoArrayList.add(progressOrderInfo);
+    }
+
+    public void addFinishedOrderInfo(FinishedOrderInfo finishedOrderInfo){
+        finishedOrderInfoArrayList.add(finishedOrderInfo);
     }
 
     /**
@@ -171,7 +189,7 @@ public class MainFrame extends JFrame implements ActionListener{
             saveOrder();
             return;
         }
-        orderInfoArrayList.add(new OrderInfo(orderProgressPanel, placedItemOrderModel, isPhoneNumber, orderNumber,
+        addProgressOrderInfo(new ProgressOrderInfo(orderProgressPanel, placedItemOrderModel, isPhoneNumber, orderNumber,
                 txtField_name.getText()));
         txtField_name.setText("");
         placedItemOrderModel.clear();

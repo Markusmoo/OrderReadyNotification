@@ -47,9 +47,7 @@
                 <properties>
                   <enabled value="true"/>
                   <font size="20" style="1"/>
-                  <model>
-                    <item value="Hello"/>
-                  </model>
+                  <model/>
                 </properties>
               </component>
             </children>
@@ -82,27 +80,27 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="ff956" class="javax.swing.JButton" binding="orderReadyButton" default-binding="true">
+          <component id="ff956" class="javax.swing.JButton" binding="topButton">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-16308224"/>
+              <background color="-12828863"/>
               <enabled value="true"/>
               <font size="16" style="1"/>
-              <foreground color="-16308224"/>
-              <text value="Order Ready"/>
+              <foreground color="-4473925"/>
+              <text value="top"/>
             </properties>
           </component>
-          <component id="d4a06" class="javax.swing.JButton" binding="cancelOrderButton" default-binding="true">
+          <component id="d4a06" class="javax.swing.JButton" binding="bottomButton">
             <constraints>
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-12514291"/>
+              <background color="-12828863"/>
               <font size="16" style="1"/>
-              <foreground color="-12514291"/>
-              <text value="Cancel Order"/>
+              <foreground color="-4473925"/>
+              <text value="bottom"/>
             </properties>
           </component>
         </children>

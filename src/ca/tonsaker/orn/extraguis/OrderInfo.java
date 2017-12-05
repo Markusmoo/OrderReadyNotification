@@ -11,13 +11,13 @@ import java.awt.event.ActionListener;
  *
  * Created by Markus Tonsaker on 2017-12-02.
  */
-public class OrderInfo implements ActionListener{
+public abstract class OrderInfo implements ActionListener{
     protected JTextField txtField_orderNumber;
     protected JPanel ordersPanel;
     protected JPanel orderInfoPanel;
     protected JTextField txtField_elapsedTime;
-    protected JButton orderReadyButton;
-    protected JButton cancelOrderButton;
+    protected JButton topButton;
+    protected JButton bottomButton;
     protected JList orderList;
     protected JTextField txtField_name;
     protected JLabel lbl_orderNumber;
@@ -30,43 +30,40 @@ public class OrderInfo implements ActionListener{
     protected DefaultListModel<String> orderListModel;
 
     protected boolean clockRunning = false;
+
     protected long elapsedTime;
     protected long beginTime;
 
     protected boolean isPhoneNumber;
     protected String orderNumber;
+
     protected String orderName;
 
-    public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isPhoneNumber, String orderNumber, String orderName){
+    public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isPhoneNumber, String orderNumber, String orderName, long elapsedTime){
         orderList.setModel(orderListModel);
         for(int idx = 0; idx < list.getSize(); idx++) {
             orderListModel.addElement(list.getElementAt(idx));
-            System.out.println("Added: " + list.getElementAt(idx)); //TODO
-            System.out.println(orderListModel.getSize()); //TODO
         }
 
         this.parentPanel = parent;
-        this.isPhoneNumber = isPhoneNumber;
-        this.orderNumber = orderNumber;
-        this.orderName = orderName;
 
-        if(isPhoneNumber) orderNumber = "(" + orderNumber.substring(0,3) + ")-" + orderNumber.substring(3,6) + "-" +
-                orderNumber.substring(6);
+        this.setOrderNumber(isPhoneNumber, orderNumber);
+        this.setOrderName(orderName);
+        this.setElapsedTime(elapsedTime);
 
-        txtField_orderNumber.setText(orderNumber);
-        txtField_name.setText(orderName);
+        this.bottomButton.addActionListener(this);
+        this.topButton.addActionListener(this);
 
-        this.cancelOrderButton.addActionListener(this);
-        this.orderReadyButton.addActionListener(this);
-
-        parent.add(orderInfoPanel);
-        invisibleSpace = Box.createVerticalStrut(10);
-        parent.add(invisibleSpace);
-        orderInfoPanel.setMaximumSize(new Dimension(600,200));
-        orderInfoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        addToMainFrame();
 
         setupClock();
     }
+
+    public abstract void addToMainFrame();
+
+    protected abstract void topButtonAction();
+
+    protected abstract void bottomButtonAction();
 
     public void setupClock(){
         elapsedTime = 0;
@@ -88,50 +85,62 @@ public class OrderInfo implements ActionListener{
         clockRunning = false;
     }
 
-    public void orderReady(){
-        if(isPhoneNumber) {
-            int i = JOptionPane.showOptionDialog(parentPanel, "Would you like to send a SMS Notification to "+txtField_orderNumber.getText()+"?",
-                    "SMS Option Window", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-            if(i == 2 || i == -1){
-                return;
-            }else if(i == 1){
-                sendToFinishedOrders();
-            }else if(i == 0) {
-                MainFrame.twilioHandler.sendNotification(orderName, orderNumber, orderListModel);
-                sendToFinishedOrders();
-            }
-        }
-    }
-
-    private void sendToFinishedOrders(){
-        MainFrame.finishedOrderInfoArrayList.add(new FinishedOrderInfo(this));
-        orderCancel2();
-    }
-
-    public void orderCancel(){
-        int option = JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you want to cancel this order?",
-                "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-        if(option != 0) return;
-        orderCancel2();
-    }
-
-    private void orderCancel2(){
+    public void selfDestruct(){
         orderInfoPanel.removeAll();
         orderInfoPanel.setVisible(false);
         parentPanel.remove(orderInfoPanel);
         parentPanel.remove(invisibleSpace);
-        MainFrame.orderInfoArrayList.remove(this);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        if(src.equals(cancelOrderButton)) orderCancel(); else
-        if(src.equals(orderReadyButton)) orderReady();
+        if(src.equals(bottomButton)) bottomButtonAction(); else
+        if(src.equals(topButton)) topButtonAction();
     }
 
     protected void createUIComponents() {
         orderListModel = new DefaultListModel<>();
         orderList = new JList<>(orderListModel);
+    }
+
+    public boolean isPhoneNumber() {
+        return isPhoneNumber;
+    }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
+
+    public void setOrderNumber(boolean isPhoneNumber, String orderNumber) {
+        this.orderNumber = orderNumber;
+        this.isPhoneNumber = isPhoneNumber;
+        String t = orderNumber;
+        if(isPhoneNumber){
+            t = "(" + orderNumber.substring(0,3) + ")-" + orderNumber.substring(3,6) + "-" +
+                    orderNumber.substring(6);
+        }
+        txtField_orderNumber.setText(t);
+    }
+
+    public String getOrderName() {
+        return orderName;
+    }
+
+    public void setOrderName(String orderName) {
+        this.orderName = orderName;
+        txtField_name.setText(orderName);
+    }
+
+    public long getElapsedTime() {
+        return elapsedTime;
+    }
+
+    public void setElapsedTime(long elapsedTime) {
+        this.elapsedTime = elapsedTime;
+        long s = (elapsedTime / 1000) % 60;
+        long m = (elapsedTime / (1000 * 60)) % 60;
+        long h = (elapsedTime / (1000 * 60 * 60)) % 24;
+        txtField_elapsedTime.setText(String.format("%d:%02d:%02d", h, m, s));
     }
 }
