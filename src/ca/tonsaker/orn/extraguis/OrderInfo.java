@@ -1,8 +1,6 @@
 package ca.tonsaker.orn.extraguis;
 
 import ca.tonsaker.orn.MainFrame;
-import com.google.gson.annotations.Expose;
-import sun.applet.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -91,14 +89,33 @@ public class OrderInfo implements ActionListener{
     }
 
     public void orderReady(){
-        //TODO
-        if(isPhoneNumber) MainFrame.twilioHandler.sendNotification(orderName, "+1"+orderNumber, "+16042655644",orderListModel);
+        if(isPhoneNumber) {
+            int i = JOptionPane.showOptionDialog(parentPanel, "Would you like to send a SMS Notification to "+txtField_orderNumber.getText()+"?",
+                    "SMS Option Window", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+            if(i == 2 || i == -1){
+                return;
+            }else if(i == 1){
+                sendToFinishedOrders();
+            }else if(i == 0) {
+                MainFrame.twilioHandler.sendNotification(orderName, orderNumber, orderListModel);
+                sendToFinishedOrders();
+            }
+        }
+    }
+
+    private void sendToFinishedOrders(){
+        MainFrame.finishedOrderInfoArrayList.add(new FinishedOrderInfo(this));
+        orderCancel2();
     }
 
     public void orderCancel(){
         int option = JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you want to cancel this order?",
                 "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
         if(option != 0) return;
+        orderCancel2();
+    }
+
+    private void orderCancel2(){
         orderInfoPanel.removeAll();
         orderInfoPanel.setVisible(false);
         parentPanel.remove(orderInfoPanel);

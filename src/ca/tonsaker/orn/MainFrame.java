@@ -38,7 +38,9 @@ public class MainFrame extends JFrame implements ActionListener{
     private JTextField txtField_nameCompany;
     private JTextField txtField_twilioSID;
     private JTextField txtField_name;
-    private JTextField txtField_twilioToken;
+    private JTextField txtField_twilioAPISecret;
+    private JTextField txtField_twilioPhoneNumber;
+    private JTextField txtField_twilioAPIKey;
 
     private CFGData cfgData;
 
@@ -78,7 +80,7 @@ public class MainFrame extends JFrame implements ActionListener{
         super("Window");
         this.setContentPane(mainPanel);
         this.setBounds(100,100,800,600);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.pack();
 
         orderProgressPanel.setLayout(new BoxLayout(orderProgressPanel, BoxLayout.Y_AXIS));
@@ -99,7 +101,7 @@ public class MainFrame extends JFrame implements ActionListener{
 
         cfgData = new CFGData();
         cfgData.loadCFG();
-        twilioHandler = new TwilioHandler(cfgData);
+        twilioHandler = new TwilioHandler(this, cfgData);
 
         syncData();
 
@@ -109,7 +111,9 @@ public class MainFrame extends JFrame implements ActionListener{
     private void syncData(){
         txtField_nameCompany.setText(cfgData.COMPANY_NAME);
         txtField_twilioSID.setText(cfgData.ACCOUNT_SID);
-        txtField_twilioToken.setText(cfgData.AUTH_TOKEN);
+        txtField_twilioAPIKey.setText(cfgData.API_KEY);
+        txtField_twilioAPISecret.setText(cfgData.API_SECRET);
+        txtField_twilioPhoneNumber.setText(cfgData.PHONE_NUMBER);
         settingsMenuItemsModel.clear();
         placeOrderModel.clear();
         for(String s : cfgData.MENU_ITEMS){
@@ -168,7 +172,7 @@ public class MainFrame extends JFrame implements ActionListener{
             return;
         }
         orderInfoArrayList.add(new OrderInfo(orderProgressPanel, placedItemOrderModel, isPhoneNumber, orderNumber,
-                txtField_name.getText())); //TODO May get deleted from memory
+                txtField_name.getText()));
         txtField_name.setText("");
         placedItemOrderModel.clear();
         tabbedPane.setSelectedComponent(scrollPane_progress);
@@ -199,8 +203,8 @@ public class MainFrame extends JFrame implements ActionListener{
                 menuItems[idx] = objectArray[idx].toString();
             }
 
-            cfgData = new CFGData(txtField_twilioSID.getText(),txtField_twilioToken.getText(),
-                    txtField_nameCompany.getText(),menuItems);
+            cfgData = new CFGData(txtField_twilioSID.getText(), txtField_twilioAPIKey.getText(), txtField_twilioAPISecret.getText(),
+                    txtField_twilioPhoneNumber.getText(), txtField_nameCompany.getText(),menuItems);
             placeOrderModel.clear();
             cfgData.saveCFG();
         }catch (IOException e){
