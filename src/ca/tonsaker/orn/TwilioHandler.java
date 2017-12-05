@@ -10,8 +10,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
- * TODO
- *
  * Created by Markus Tonsaker on 2017-12-04.
  */
 public class TwilioHandler implements ActionListener{
@@ -47,7 +45,7 @@ public class TwilioHandler implements ActionListener{
                 "- "+ cfgData.COMPANY_NAME;
 
         //TODO Format with Country code ie +1
-        MessageCreator msgCreator = Message.creator(new PhoneNumber("+1"+toNumber), new PhoneNumber("+1"+cfgData.PHONE_NUMBER), body);
+        MessageCreator msgCreator = Message.creator(new PhoneNumber("+1"+toNumber), new PhoneNumber(cfgData.PHONE_NUMBER), body);
         Message msg = msgCreator.create();
         lastMessage = msg;
         printSMSDetails(msg);

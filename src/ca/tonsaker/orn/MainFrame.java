@@ -7,15 +7,15 @@ import ca.tonsaker.orn.extraguis.OrderInfo;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by Markus Tonsaker on 2017-12-02.
  */
-public class MainFrame extends JFrame implements ActionListener{
+public class MainFrame extends JFrame implements ActionListener, WindowListener{
     private JPanel mainPanel;
     private JTabbedPane tabbedPane;
     private JButton btn_addItemOrder;
@@ -78,15 +78,16 @@ public class MainFrame extends JFrame implements ActionListener{
     }
 
     /**
-     * TODO Default to maximized window
      * Creates and opens the POS window.
      */
     public MainFrame(){
         super("Window");
         this.setContentPane(mainPanel);
         this.setBounds(100,100,1000,600);
-        this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        this.addWindowListener(this);
         this.pack();
+        this.setExtendedState( this.getExtendedState()|JFrame.MAXIMIZED_BOTH );
 
         orderProgressPanel.setLayout(new BoxLayout(orderProgressPanel, BoxLayout.Y_AXIS));
         orderFinishedPanel.setLayout(new BoxLayout(orderFinishedPanel, BoxLayout.Y_AXIS));
@@ -198,10 +199,20 @@ public class MainFrame extends JFrame implements ActionListener{
 
     public void settingsAddNewItem(){
         settingsMenuItemsModel.addElement(txtField_settingsNewItem.getText());
+        txtField_settingsNewItem.setText("");
     }
 
     public void settingsClearAllOrders(){
-        //TODO
+        for(Iterator<FinishedOrderInfo> i = finishedOrderInfoArrayList.iterator(); i.hasNext();){
+            FinishedOrderInfo o = i.next();
+            i.remove();
+            o.selfDestruct();
+        }
+        for(Iterator<ProgressOrderInfo> i = progressOrderInfoArrayList.iterator(); i.hasNext();){
+            ProgressOrderInfo o = i.next();
+            i.remove();
+            o.selfDestruct();
+        }
     }
 
     public void settingsRemoveAllItems(){
@@ -250,4 +261,32 @@ public class MainFrame extends JFrame implements ActionListener{
         SpinnerModel sModel = new SpinnerNumberModel(1,1,99,1);
         spnr_qty = new JSpinner(sModel);
     }
+
+    @Override
+    public void windowOpened(WindowEvent e) {}
+
+    @Override
+    public void windowClosing(WindowEvent e) {
+        String objButtons[] = {"Yes","No"};
+        int PromptResult = JOptionPane.showOptionDialog(this,"Are you sure you want to exit?",
+                "Are you sure?",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,objButtons,objButtons[1]);
+        if(PromptResult == JOptionPane.YES_OPTION){
+            System.exit(0);
+        }
+    }
+
+    @Override
+    public void windowClosed(WindowEvent e) {}
+
+    @Override
+    public void windowIconified(WindowEvent e) {}
+
+    @Override
+    public void windowDeiconified(WindowEvent e) {}
+
+    @Override
+    public void windowActivated(WindowEvent e) {}
+
+    @Override
+    public void windowDeactivated(WindowEvent e) {}
 }

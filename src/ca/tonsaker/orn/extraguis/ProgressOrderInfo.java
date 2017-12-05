@@ -23,7 +23,7 @@ public class ProgressOrderInfo extends OrderInfo{
     }
 
     @Override
-    public void addToMainFrame() {
+    public void addToParentPanel() {
         parentPanel.add(orderInfoPanel);
         invisibleSpace = Box.createVerticalStrut(10);
         parentPanel.add(invisibleSpace);
@@ -69,8 +69,11 @@ public class ProgressOrderInfo extends OrderInfo{
         selfDestruct();
     }
 
+    /**
+     * Deletes this panel from existence.
+     */
     public void selfDestruct(){
         super.selfDestruct();
-        MainFrame.progressOrderInfoArrayList.remove(this);
+        if(MainFrame.progressOrderInfoArrayList.contains(this)) MainFrame.progressOrderInfoArrayList.remove(this);
     }
 }

@@ -7,6 +7,7 @@ import com.google.gson.annotations.Expose;
 import java.io.*;
 
 /**
+ * TODO Change name of ORN folder for %appdata%
  * Created by Markus Tonsaker on 2017-12-04.
  */
 public class CFGData {

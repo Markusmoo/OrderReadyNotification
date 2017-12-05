@@ -29,17 +29,17 @@ public class FinishedOrderInfo extends OrderInfo{
         }
     }
 
+    public FinishedOrderInfo(JPanel newPanel, OrderInfo info){
+        this(newPanel, info.orderListModel, info.isPhoneNumber, info.orderNumber, info.orderName, info.elapsedTime);
+    }
+
     @Override
-    public void addToMainFrame() {
+    public void addToParentPanel() {
         parentPanel.add(orderInfoPanel, 0);
         invisibleSpace = Box.createVerticalStrut(10);
         parentPanel.add(invisibleSpace, 1);
         orderInfoPanel.setMaximumSize(new Dimension(600,200));
         orderInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-    }
-
-    public FinishedOrderInfo(JPanel newPanel, OrderInfo info){
-        this(newPanel, info.orderListModel, info.isPhoneNumber, info.orderNumber, info.orderName, info.elapsedTime);
     }
 
     /**
@@ -71,6 +71,14 @@ public class FinishedOrderInfo extends OrderInfo{
         if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you would like to resend a SMS Notification?",
                 "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
         MainFrame.twilioHandler.sendNotification(orderName, orderNumber, orderListModel);
+    }
+
+    /**
+     * Deletes this panel from existence.
+     */
+    public void selfDestruct(){
+        super.selfDestruct();
+        if(MainFrame.finishedOrderInfoArrayList.contains(this)) MainFrame.finishedOrderInfoArrayList.remove(this);
     }
 
     /**
