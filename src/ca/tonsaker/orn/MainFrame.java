@@ -118,7 +118,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
         cfgData = new CFGData();
         cfgData.loadCFG();
-        twilioHandler = new TwilioHandler(this, cfgData);
 
         syncData();
 
@@ -137,6 +136,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
             settingsMenuItemsModel.addElement(s);
             addOrderButton(s);
         }
+        twilioHandler = new TwilioHandler(this, cfgData);
     }
 
     public void removeAllOrderButtons(){

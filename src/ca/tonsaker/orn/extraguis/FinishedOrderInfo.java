@@ -35,9 +35,9 @@ public class FinishedOrderInfo extends OrderInfo{
 
     @Override
     public void addToParentPanel() {
-        parentPanel.add(orderInfoPanel, 0);
+        parentPanel.add(orderInfoPanel, 1);
         invisibleSpace = Box.createVerticalStrut(10);
-        parentPanel.add(invisibleSpace, 1);
+        parentPanel.add(invisibleSpace, 2);
         orderInfoPanel.setMaximumSize(new Dimension(600,200));
         orderInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
