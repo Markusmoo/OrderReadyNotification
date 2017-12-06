@@ -11,22 +11,28 @@ import java.awt.event.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 /**
  * Created by Markus Tonsaker on 2017-12-02.
  */
 public class MainFrame extends JFrame implements ActionListener, WindowListener{
+
+    public static final String TITLE = "ReadySteadyPOS";
+    public static final String VERSION = "1.0";
+
+    public static final int BUTTON_WIDTH = 200;
+    public static final int BUTTON_HEIGHT = 200;
+
     private JPanel mainPanel;
     private JTabbedPane tabbedPane;
-    private JButton btn_addItemOrder;
-    private JSpinner spnr_qty;
-    private JList list_placeOrder;
     private JButton btn_saveOrder;
     private JButton btn_removeItemOrder;
     private JList list_itemsPlacedOrder;
     private JPanel orderPlacePanel;
     private JPanel orderProgressPanel;
     private JPanel orderFinishedPanel;
+    private JPanel placeOrderButtonsPanel;
     private JScrollPane scrollPane_finished;
     private JScrollPane scrollPane_progress;
     private JList list_settingsMenuItems;
@@ -45,13 +51,14 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
     private CFGData cfgData;
 
-    private DefaultListModel<String> placeOrderModel = new DefaultListModel<>();;
     private DefaultListModel<String> placedItemOrderModel = new DefaultListModel<>();;
     private DefaultListModel<String> settingsMenuItemsModel = new DefaultListModel<>();;
 
     private Timer stopwatchUpdater;
 
     public static TwilioHandler twilioHandler;
+
+    public static ArrayList<JButton> orderButtons = new ArrayList<>();
 
     public static ArrayList<ProgressOrderInfo> progressOrderInfoArrayList = new ArrayList<>();
     public static JPanel accessOrderProgressPanel;
@@ -81,7 +88,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
      * Creates and opens the POS window.
      */
     public MainFrame(){
-        super("Window");
+        super(MainFrame.TITLE);
         this.setContentPane(mainPanel);
         this.setBounds(100,100,1000,600);
         this.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -91,8 +98,8 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
         orderProgressPanel.setLayout(new BoxLayout(orderProgressPanel, BoxLayout.Y_AXIS));
         orderFinishedPanel.setLayout(new BoxLayout(orderFinishedPanel, BoxLayout.Y_AXIS));
+        placeOrderButtonsPanel.setLayout(new GridLayout(0, 3,5,5));//placeOrderButtonsPanel.getWidth()/MainFrame.BUTTON_WIDTH, 5, 5));
 
-        btn_addItemOrder.addActionListener(this);
         btn_removeItemOrder.addActionListener(this);
         btn_saveOrder.addActionListener(this);
         btn_settingsAddNewItem.addActionListener(this);
@@ -102,7 +109,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         btn_settingsSave.addActionListener(this);
 
         list_settingsMenuItems.setModel(settingsMenuItemsModel);
-        list_placeOrder.setModel(placeOrderModel);
         list_itemsPlacedOrder.setModel(placedItemOrderModel);
 
         MainFrame.accessOrderFinishedPanel = orderFinishedPanel;
@@ -126,11 +132,40 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         txtField_twilioAPISecret.setText(cfgData.API_SECRET);
         txtField_twilioPhoneNumber.setText(cfgData.PHONE_NUMBER);
         settingsMenuItemsModel.clear();
-        placeOrderModel.clear();
+        placeOrderButtonsPanel.removeAll(); //TODO May remove it self
         for(String s : cfgData.MENU_ITEMS){
             settingsMenuItemsModel.addElement(s);
-            placeOrderModel.addElement(s);
+            addOrderButton(s);
         }
+    }
+
+    public void removeAllOrderButtons(){
+        for(Iterator<JButton> i = orderButtons.iterator(); i.hasNext();){
+            JButton b = i.next();
+            b.removeAll();
+            b.setVisible(false);
+            i.remove();
+        }
+    }
+
+    public void addOrderButton(String name){
+        JButton b = new JButton(name);
+        b.addActionListener(this);
+        b.setFont(new Font(null,Font.BOLD,20));
+        int i = Math.abs(name.hashCode()) % 8;
+        switch (i){
+            case 0: b.setForeground(Color.GREEN); break;
+            case 1: b.setForeground(Color.CYAN); break;
+            case 2: b.setForeground(Color.BLUE); break;
+            case 3: b.setForeground(Color.MAGENTA); break;
+            case 4: b.setForeground(Color.ORANGE); break;
+            case 5: b.setForeground(Color.RED); break;
+            case 6: b.setForeground(Color.YELLOW); break;
+            case 7: b.setForeground(Color.WHITE); break;
+        }
+        b.setBackground(Color.GRAY);
+        placeOrderButtonsPanel.add(b);
+        orderButtons.add(b);
     }
 
     private void createStopwatchUpdater(){
@@ -153,16 +188,14 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     }
 
     /**
-     * Calling this will add the item selected, in the menu, to the order list. If no item is selected, only the
-     * quantity spinner will reset to 1.
+     * TODO Combine items
+     * Calling this will add the item to the order list.
+     *
+     * @param item the name of the item to add to the order
      */
-    public void addItemToOrder(){
-        int quantity = (int) spnr_qty.getValue();
-        spnr_qty.setValue(1);
-        if(list_placeOrder.isSelectionEmpty()) return;
-        String item = quantity + " - " + list_placeOrder.getSelectedValue().toString();
+    public void addItemToOrder(String item){
+        //placedItemOrderModel.contains() TODO Change all order items from strings to objects
         placedItemOrderModel.addElement(item);
-        list_placeOrder.clearSelection();
     }
 
     /**
@@ -234,7 +267,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
             cfgData = new CFGData(txtField_twilioSID.getText(), txtField_twilioAPIKey.getText(), txtField_twilioAPISecret.getText(),
                     txtField_twilioPhoneNumber.getText(), txtField_nameCompany.getText(),menuItems);
-            placeOrderModel.clear();
+            removeAllOrderButtons();
             cfgData.saveCFG();
         }catch (IOException e){
             System.err.println("Error occurred when saving files.");
@@ -246,8 +279,17 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        if(src.equals(stopwatchUpdater)) updateStopwatchTimers(); else
-        if(src.equals(btn_addItemOrder)) addItemToOrder(); else
+        if(src.equals(stopwatchUpdater)){
+            updateStopwatchTimers();
+            return;
+        }
+        for(Iterator<JButton> i = orderButtons.iterator(); i.hasNext();){
+            JButton b = i.next();
+            if(src.equals(b)){
+                this.addItemToOrder(b.getText());
+                return;
+            }
+        }
         if(src.equals(btn_removeItemOrder)) removeItemFromOrder(); else
         if(src.equals(btn_saveOrder)) saveOrder(); else
         if(src.equals(btn_settingsAddNewItem)) settingsAddNewItem(); else
@@ -255,11 +297,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         if(src.equals(btn_settingsRemoveAllItemsButton)) settingsRemoveAllItems(); else
         if(src.equals(btn_settingsRemoveSelectedItem)) settingsRemoveSelectedItem(); else
         if(src.equals(btn_settingsSave)) settingsSave();
-    }
-
-    private void createUIComponents() {
-        SpinnerModel sModel = new SpinnerNumberModel(1,1,99,1);
-        spnr_qty = new JSpinner(sModel);
     }
 
     @Override
