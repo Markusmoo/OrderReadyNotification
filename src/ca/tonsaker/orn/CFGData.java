@@ -16,17 +16,19 @@ public class CFGData {
     @Expose public String API_KEY = "";
     @Expose public String API_SECRET = "";
     @Expose public String PHONE_NUMBER = "";
+    @Expose public boolean SEND_ORDER = true;
 
     @Expose public String COMPANY_NAME = "";
     @Expose public String[] MENU_ITEMS = {};
 
-    public CFGData(String accountSID, String apiKey, String apiSecret, String phoneNumber, String companyName, String[] menuItems){
+    public CFGData(String accountSID, String apiKey, String apiSecret, String phoneNumber, String companyName, boolean isSendOrder, String[] menuItems){
         ACCOUNT_SID = accountSID;
         API_KEY = apiKey;
         API_SECRET = apiSecret;
         PHONE_NUMBER = phoneNumber;
         COMPANY_NAME = companyName;
         MENU_ITEMS = menuItems;
+        SEND_ORDER = isSendOrder;
     }
 
     public CFGData(){}
@@ -55,6 +57,7 @@ public class CFGData {
         this.PHONE_NUMBER = cfgData.PHONE_NUMBER;
         this.COMPANY_NAME = cfgData.COMPANY_NAME;
         this.MENU_ITEMS = cfgData.MENU_ITEMS;
+        this.SEND_ORDER = cfgData.SEND_ORDER;
 
         System.out.println("Config file successfully loaded from \"" + path + "\"");
     }

@@ -48,6 +48,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     private JTextField txtField_twilioAPISecret;
     private JTextField txtField_twilioPhoneNumber;
     private JTextField txtField_twilioAPIKey;
+    private JCheckBox chkBX_displayOrder;
 
     private CFGData cfgData;
 
@@ -130,6 +131,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         txtField_twilioAPIKey.setText(cfgData.API_KEY);
         txtField_twilioAPISecret.setText(cfgData.API_SECRET);
         txtField_twilioPhoneNumber.setText(cfgData.PHONE_NUMBER);
+        chkBX_displayOrder.setSelected(cfgData.SEND_ORDER);
         settingsMenuItemsModel.clear();
         placeOrderButtonsPanel.removeAll(); //TODO May remove it self
         for(String s : cfgData.MENU_ITEMS){
@@ -152,17 +154,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         JButton b = new JButton(name);
         b.addActionListener(this);
         b.setFont(new Font(null,Font.BOLD,20));
-        int i = Math.abs(name.hashCode()) % 8;
-        switch (i){
-            case 0: b.setForeground(Color.GREEN); break;
-            case 1: b.setForeground(Color.CYAN); break;
-            case 2: b.setForeground(Color.BLUE); break;
-            case 3: b.setForeground(Color.MAGENTA); break;
-            case 4: b.setForeground(Color.ORANGE); break;
-            case 5: b.setForeground(Color.RED); break;
-            case 6: b.setForeground(Color.YELLOW); break;
-            case 7: b.setForeground(Color.WHITE); break;
-        }
+        b.setForeground(Utilities.randomColorWord(name));
         b.setBackground(Color.GRAY);
         placeOrderButtonsPanel.add(b);
         orderButtons.add(b);
@@ -266,7 +258,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
             }
 
             cfgData = new CFGData(txtField_twilioSID.getText(), txtField_twilioAPIKey.getText(), txtField_twilioAPISecret.getText(),
-                    txtField_twilioPhoneNumber.getText(), txtField_nameCompany.getText(),menuItems);
+                    txtField_twilioPhoneNumber.getText(), txtField_nameCompany.getText(), chkBX_displayOrder.isSelected(), menuItems);
             removeAllOrderButtons();
             cfgData.saveCFG();
         }catch (IOException e){

@@ -30,22 +30,25 @@ public class TwilioHandler implements ActionListener{
     }
 
     public void sendNotification(String name, String toNumber, DefaultListModel<String> list){
-        String body;
-        if(name.equals("")){
-            body = "Your order is ready!!!\n\n";
-        }else{
-            body = "Hey " + name + "! Your order is ready!!!:\n* * * * * *\n";
+        StringBuilder body = new StringBuilder();
+        if(!name.equals("")){
+            body.append("Hey " + name + "!\n");
         }
-        StringBuilder orderList = new StringBuilder();
-        for(Object s : list.toArray()){
-            orderList.append(s.toString()+"\n");
+        body.append("Your order is ready!\n");
+        if(cfgData.SEND_ORDER) {
+            body.append("* * * * * *\n");
+            StringBuilder orderList = new StringBuilder();
+            for (Object s : list.toArray()) {
+                orderList.append(s.toString() + "\n");
+            }
+            body.append(orderList.toString());
+            body.append("* * * * * *\n");
         }
-        body += orderList.toString();
-        body += "* * * * * *\nSee you soon! :)\n" +
-                "- "+ cfgData.COMPANY_NAME;
+        body.append("See you soon! :)\n" +
+                "- "+ cfgData.COMPANY_NAME);
 
         //TODO Format with Country code ie +1
-        MessageCreator msgCreator = Message.creator(new PhoneNumber("+1"+toNumber), new PhoneNumber(cfgData.PHONE_NUMBER), body);
+        MessageCreator msgCreator = Message.creator(new PhoneNumber("+1"+toNumber), new PhoneNumber(cfgData.PHONE_NUMBER), body.toString());
         Message msg = msgCreator.create();
         lastMessage = msg;
         printSMSDetails(msg);
