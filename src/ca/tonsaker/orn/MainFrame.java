@@ -28,14 +28,14 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     private JTabbedPane tabbedPane;
     private JButton btn_saveOrder;
     private JButton btn_removeItemOrder;
-    private JList list_itemsPlacedOrder;
+    private ca.tonsaker.orn.extraguis.JColorList list_itemsPlacedOrder;
     private JPanel orderPlacePanel;
     private JPanel orderProgressPanel;
     private JPanel orderFinishedPanel;
     private JPanel placeOrderButtonsPanel;
     private JScrollPane scrollPane_finished;
     private JScrollPane scrollPane_progress;
-    private JList list_settingsMenuItems;
+    private ca.tonsaker.orn.extraguis.JColorList list_settingsMenuItems;
     private JTextField txtField_settingsNewItem;
     private JButton btn_settingsAddNewItem;
     private JButton btn_settingsClearAllOrders;

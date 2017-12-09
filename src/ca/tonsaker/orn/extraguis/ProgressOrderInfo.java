@@ -14,12 +14,12 @@ public class ProgressOrderInfo extends OrderInfo{
     public ProgressOrderInfo(JPanel parent, DefaultListModel<String> list, boolean isPhoneNumber, String orderNumber, String orderName){
         super(parent, list, isPhoneNumber, orderNumber, orderName, 0);
 
-        topButton.setText("Order Ready");
-        topButton.setForeground(new Color(7,40,0));
-        topButton.setBackground(new Color(7,40,0));
-        bottomButton.setText("Cancel Order");
-        bottomButton.setForeground(new Color(65,12,13));
-        bottomButton.setBackground(new Color(65,12,13));
+        aButton.setText("Order Ready");
+        aButton.setForeground(new Color(7,40,0));
+        aButton.setBackground(new Color(7,40,0));
+        bButton.setText("Cancel Order");
+        bButton.setForeground(new Color(65,12,13));
+        bButton.setBackground(new Color(65,12,13));
     }
 
     @Override
@@ -27,7 +27,7 @@ public class ProgressOrderInfo extends OrderInfo{
         parentPanel.add(orderInfoPanel);
         invisibleSpace = Box.createVerticalStrut(10);
         parentPanel.add(invisibleSpace);
-        orderInfoPanel.setMaximumSize(new Dimension(600,200));
+        orderInfoPanel.setMaximumSize(new Dimension(900,160));
         orderInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 

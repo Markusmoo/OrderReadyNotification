@@ -121,11 +121,10 @@
                     <properties/>
                     <border type="bevel-lowered"/>
                     <children>
-                      <component id="99eb9" class="javax.swing.JList" binding="list_itemsPlacedOrder">
+                      <component id="a6728" class="ca.tonsaker.orn.extraguis.JColorList" binding="list_itemsPlacedOrder">
                         <constraints/>
                         <properties>
                           <font size="20" style="1"/>
-                          <selectionMode value="2"/>
                           <toolTipText value="Items selected for order"/>
                         </properties>
                       </component>
@@ -208,7 +207,7 @@
                     <properties/>
                     <border type="bevel-lowered"/>
                     <children>
-                      <component id="e005e" class="javax.swing.JList" binding="list_settingsMenuItems">
+                      <component id="7e01a" class="ca.tonsaker.orn.extraguis.JColorList" binding="list_settingsMenuItems">
                         <constraints/>
                         <properties/>
                       </component>

@@ -14,18 +14,18 @@ public class FinishedOrderInfo extends OrderInfo{
         super(parent, list, isPhoneNumber, orderNumber, orderName, elapsedTime);
 
         this.elapsedTime = elapsedTime;
-        topButton.setText("Done");
-        topButton.setForeground(new Color(60, 60, 0));
-        topButton.setBackground(new Color(60, 60, 0));
-        bottomButton.setText("Send SMS");
+        aButton.setText("Done");
+        aButton.setForeground(new Color(60, 60, 0));
+        aButton.setBackground(new Color(60, 60, 0));
+        bButton.setText("Send SMS");
         if(isPhoneNumber) {
-            bottomButton.setForeground(new Color(5, 0, 65));
-            bottomButton.setBackground(new Color(5, 0, 65));
+            bButton.setForeground(new Color(5, 0, 65));
+            bButton.setBackground(new Color(5, 0, 65));
         }
         txtField_elapsedTime.setEnabled(false); //TODO Test
         if(!isPhoneNumber) {
-            bottomButton.setForeground(new Color(60, 63, 65));
-            bottomButton.setEnabled(false);
+            bButton.setForeground(new Color(60, 63, 65));
+            bButton.setEnabled(false);
         }
     }
 
@@ -38,7 +38,7 @@ public class FinishedOrderInfo extends OrderInfo{
         parentPanel.add(orderInfoPanel, 1);
         invisibleSpace = Box.createVerticalStrut(10);
         parentPanel.add(invisibleSpace, 2);
-        orderInfoPanel.setMaximumSize(new Dimension(600,200));
+        orderInfoPanel.setMaximumSize(new Dimension(900,160));
         orderInfoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
     }
 
@@ -49,12 +49,12 @@ public class FinishedOrderInfo extends OrderInfo{
         if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you are done with this order?",
                 "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
         Color defaultColor = new Color(60,63,65);
-        bottomButton.setBackground(defaultColor);
-        bottomButton.setForeground(defaultColor);
-        topButton.setBackground(defaultColor);
-        topButton.setForeground(defaultColor);
-        bottomButton.setEnabled(false);
-        topButton.setEnabled(false);
+        bButton.setBackground(defaultColor);
+        bButton.setForeground(defaultColor);
+        aButton.setBackground(defaultColor);
+        aButton.setForeground(defaultColor);
+        bButton.setEnabled(false);
+        aButton.setEnabled(false);
         txtField_elapsedTime.setEnabled(false);
         txtField_orderNumber.setEnabled(false);
         txtField_name.setEnabled(false);

@@ -17,13 +17,17 @@ public abstract class OrderInfo implements ActionListener{
     protected JPanel ordersPanel;
     protected JPanel orderInfoPanel;
     protected JTextField txtField_elapsedTime;
-    protected JButton topButton;
-    protected JButton bottomButton;
-    protected JList orderList;
+    protected JButton aButton;
+    protected JButton bButton;
+    protected JColorList orderList;
     protected JTextField txtField_name;
     protected JLabel lbl_orderNumber;
     protected JLabel lbl_name;
     protected JLabel lbl_eTime;
+    private JTextField textField1;
+    private JRadioButton toStayRadioButton;
+    private JRadioButton carryoutRadioButton;
+    private JRadioButton deliveryRadioButton;
 
     protected JPanel parentPanel;
     protected Component invisibleSpace;
@@ -54,6 +58,7 @@ public abstract class OrderInfo implements ActionListener{
      * @param elapsedTime the initial or final time elapsed since the order was placed
      */
     public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isPhoneNumber, String orderNumber, String orderName, long elapsedTime){
+        orderListModel = new DefaultListModel<>();
         orderList.setModel(orderListModel);
         for(int idx = 0; idx < list.getSize(); idx++) {
             orderListModel.addElement(list.getElementAt(idx));
@@ -65,8 +70,8 @@ public abstract class OrderInfo implements ActionListener{
         this.setOrderName(orderName);
         this.setElapsedTime(elapsedTime);
 
-        this.bottomButton.addActionListener(this);
-        this.topButton.addActionListener(this);
+        this.bButton.addActionListener(this);
+        this.aButton.addActionListener(this);
 
         addToParentPanel();
 
@@ -130,16 +135,8 @@ public abstract class OrderInfo implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
-        if(src.equals(bottomButton)) bottomButtonAction(); else
-        if(src.equals(topButton)) topButtonAction();
-    }
-
-    /**
-     * Custom creates components.
-     */
-    protected void createUIComponents() {
-        orderListModel = new DefaultListModel<>();
-        orderList = new JList<>(orderListModel);
+        if(src.equals(bButton)) bottomButtonAction(); else
+        if(src.equals(aButton)) topButtonAction();
     }
 
     /**

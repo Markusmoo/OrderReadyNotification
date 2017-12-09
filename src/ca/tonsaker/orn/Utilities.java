@@ -9,7 +9,7 @@ public final class Utilities {
         switch (i){
             case 0: return Color.GREEN;
             case 1: return Color.CYAN;
-            case 2: return Color.BLUE;
+            case 2: return Color.PINK;
             case 3: return Color.MAGENTA;
             case 4: return Color.ORANGE;
             case 5: return Color.RED;
