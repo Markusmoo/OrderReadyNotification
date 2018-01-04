@@ -6,31 +6,33 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
+ * TODO Fix when pressing DONE, carryout/toStay stays orange.
+ *
  * Created by Markus Tonsaker on 2017-12-04.
  */
 public class FinishedOrderInfo extends OrderInfo{
 
-    public FinishedOrderInfo(JPanel parent, DefaultListModel<String> list, boolean isPhoneNumber, String orderNumber, String orderName, long elapsedTime){
-        super(parent, list, isPhoneNumber, orderNumber, orderName, elapsedTime);
+    public FinishedOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime){
+        super(parent, list, toStay, orderNumber, phoneNumber, orderName, elapsedTime);
 
         this.elapsedTime = elapsedTime;
         aButton.setText("Done");
         aButton.setForeground(new Color(60, 60, 0));
         aButton.setBackground(new Color(60, 60, 0));
         bButton.setText("Send SMS");
-        if(isPhoneNumber) {
+        if(!phoneNumber.equals("")) {
             bButton.setForeground(new Color(5, 0, 65));
             bButton.setBackground(new Color(5, 0, 65));
         }
         txtField_elapsedTime.setEnabled(false); //TODO Test
-        if(!isPhoneNumber) {
+        if(phoneNumber.equals("")) {
             bButton.setForeground(new Color(60, 63, 65));
             bButton.setEnabled(false);
         }
     }
 
     public FinishedOrderInfo(JPanel newPanel, OrderInfo info){
-        this(newPanel, info.orderListModel, info.isPhoneNumber, info.orderNumber, info.orderName, info.elapsedTime);
+        this(newPanel, info.orderListModel, info.toStay, info.orderNumber, info.phoneNumber, info.orderName, info.elapsedTime);
     }
 
     @Override

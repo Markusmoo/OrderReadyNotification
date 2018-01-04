@@ -11,8 +11,8 @@ import java.awt.*;
  */
 public class ProgressOrderInfo extends OrderInfo{
 
-    public ProgressOrderInfo(JPanel parent, DefaultListModel<String> list, boolean isPhoneNumber, String orderNumber, String orderName){
-        super(parent, list, isPhoneNumber, orderNumber, orderName, 0);
+    public ProgressOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName){
+        super(parent, list, toStay, orderNumber, phoneNumber, orderName, 0);
 
         aButton.setText("Order Ready");
         aButton.setForeground(new Color(7,40,0));
@@ -40,7 +40,7 @@ public class ProgressOrderInfo extends OrderInfo{
     }
 
     public void orderReady(){
-        if(isPhoneNumber) {
+        if(!phoneNumber.isEmpty()) {
             int i = JOptionPane.showOptionDialog(parentPanel, "Would you like to send a SMS Notification to "+txtField_orderNumber.getText()+"?",
                     "SMS Option Window", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
             if(i == 2 || i == -1){

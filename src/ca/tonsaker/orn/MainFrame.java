@@ -1,15 +1,22 @@
 package ca.tonsaker.orn;
 
 import ca.tonsaker.orn.extraguis.FinishedOrderInfo;
+import ca.tonsaker.orn.extraguis.OrderOptionsGUI;
 import ca.tonsaker.orn.extraguis.ProgressOrderInfo;
 import com.bulenkov.darcula.DarculaLaf;
 import ca.tonsaker.orn.extraguis.OrderInfo;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.annotations.Expose;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.IOException;
+import java.io.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -24,17 +31,21 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     public static final int BUTTON_WIDTH = 200;
     public static final int BUTTON_HEIGHT = 200;
 
-    private JPanel mainPanel;
-    private JTabbedPane tabbedPane;
+    public static int AUTOSAVE_CLOCK_MAX = 30;
+
+    public int autosaveClockCount = 30;
+
+    public JPanel mainPanel;
+    public JTabbedPane tabbedPane;
     private JButton btn_saveOrder;
     private JButton btn_removeItemOrder;
     private ca.tonsaker.orn.extraguis.JColorList list_itemsPlacedOrder;
     private JPanel orderPlacePanel;
-    private JPanel orderProgressPanel;
+    public JPanel orderProgressPanel;
     private JPanel orderFinishedPanel;
     private JPanel placeOrderButtonsPanel;
-    private JScrollPane scrollPane_finished;
-    private JScrollPane scrollPane_progress;
+    public JScrollPane scrollPane_finished;
+    public JScrollPane scrollPane_progress;
     private ca.tonsaker.orn.extraguis.JColorList list_settingsMenuItems;
     private JTextField txtField_settingsNewItem;
     private JButton btn_settingsAddNewItem;
@@ -44,7 +55,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     private JButton btn_settingsSave;
     private JTextField txtField_nameCompany;
     private JTextField txtField_twilioSID;
-    private JTextField txtField_name;
     private JTextField txtField_twilioAPISecret;
     private JTextField txtField_twilioPhoneNumber;
     private JTextField txtField_twilioAPIKey;
@@ -52,8 +62,8 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
     private CFGData cfgData;
 
-    private DefaultListModel<String> placedItemOrderModel = new DefaultListModel<>();;
-    private DefaultListModel<String> settingsMenuItemsModel = new DefaultListModel<>();;
+    public DefaultListModel<String> placedItemOrderModel = new DefaultListModel<>();;
+    public DefaultListModel<String> settingsMenuItemsModel = new DefaultListModel<>();;
 
     private Timer stopwatchUpdater;
 
@@ -165,10 +175,24 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         stopwatchUpdater.start();
     }
 
+    private void updateAutosaveClock(){
+        autosaveClockCount--;
+        if(autosaveClockCount <= 0){
+            for(OrderInfo info : progressOrderInfoArrayList){
+                try{ info.saveData(); }catch(IOException e){ e.printStackTrace(); }
+            }
+            for(OrderInfo info : finishedOrderInfoArrayList){
+                try{ info.saveData(); }catch(IOException e){ e.printStackTrace(); }
+            }
+            autosaveClockCount = AUTOSAVE_CLOCK_MAX;
+        }
+    }
+
     private void updateStopwatchTimers(){
         for(OrderInfo info : progressOrderInfoArrayList){
             info.updateClock();
         }
+        updateAutosaveClock();
     }
 
     public void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
@@ -199,9 +223,30 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         placedItemOrderModel.remove(list_itemsPlacedOrder.getSelectedIndex());
     }
 
+    public void loadOrders(){
+        String path = System.getenv("APPDATA")+"\\ORN\\config.json";
+        Reader reader;
+        try{
+            reader = new InputStreamReader(new FileInputStream(path));
+        }catch(FileNotFoundException e){
+            File f = new File(path);
+            f.getParentFile().mkdirs();
+            try{
+                f.createNewFile();
+            }catch(IOException e2){
+                e2.printStackTrace();
+            }
+            return;
+        }
+        Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
+        CFGData cfgData = gson.fromJson(reader, CFGData.class);
+
+        System.out.println("Config file successfully loaded from \"" + path + "\"");
+    }
+
     public void saveOrder(){
         if(list_itemsPlacedOrder.getModel().getSize() <= 0) return;
-        String orderNumber = JOptionPane.showInputDialog(this,
+        /*String orderNumber = JOptionPane.showInputDialog(this,
                 "Please enter Order Number OR Phone Number\n" +
                 "\nPlease type a # before phone number.\nExample: \"#604 123 1234\"", "Confirm Dialog",
                 JOptionPane.QUESTION_MESSAGE);
@@ -214,12 +259,13 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
                     "Error: Numbers only", JOptionPane.ERROR_MESSAGE);
             saveOrder();
             return;
-        }
-        addProgressOrderInfo(new ProgressOrderInfo(orderProgressPanel, placedItemOrderModel, isPhoneNumber, orderNumber,
+        }*/
+        new OrderOptionsGUI(this);
+        /*addProgressOrderInfo(new ProgressOrderInfo(orderProgressPanel, placedItemOrderModel, orderNumber,  //TODO Moved to OrderOptionsGUI.java
                 txtField_name.getText()));
         txtField_name.setText("");
         placedItemOrderModel.clear();
-        tabbedPane.setSelectedComponent(scrollPane_progress);
+        tabbedPane.setSelectedComponent(scrollPane_progress);*/
     }
 
     public void settingsAddNewItem(){
