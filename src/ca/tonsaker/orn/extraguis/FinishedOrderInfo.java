@@ -31,6 +31,25 @@ public class FinishedOrderInfo extends OrderInfo{
         }
     }
 
+    public FinishedOrderInfo(JPanel panel, OrderData orderData){
+        super(panel, orderData);
+
+        this.elapsedTime = orderData.getElapsedTimeLong();
+        aButton.setText("Done");
+        aButton.setForeground(new Color(60, 60, 0));
+        aButton.setBackground(new Color(60, 60, 0));
+        bButton.setText("Send SMS");
+        if(phoneNumber != null && !phoneNumber.isEmpty()) {
+            bButton.setForeground(new Color(5, 0, 65));
+            bButton.setBackground(new Color(5, 0, 65));
+        }
+        txtField_elapsedTime.setEnabled(false); //TODO Test
+        if(phoneNumber == null || phoneNumber.isEmpty()) {
+            bButton.setForeground(new Color(60, 63, 65));
+            bButton.setEnabled(false);
+        }
+    }
+
     public FinishedOrderInfo(JPanel newPanel, OrderInfo info){
         this(newPanel, info.orderListModel, info.toStay, info.orderNumber, info.phoneNumber, info.orderName, info.elapsedTime);
     }

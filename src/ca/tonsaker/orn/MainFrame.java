@@ -7,18 +7,13 @@ import com.bulenkov.darcula.DarculaLaf;
 import ca.tonsaker.orn.extraguis.OrderInfo;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.annotations.Expose;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.Random;
 
 /**
  * Created by Markus Tonsaker on 2017-12-02.
@@ -41,7 +36,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     private JButton btn_removeItemOrder;
     private ca.tonsaker.orn.extraguis.JColorList list_itemsPlacedOrder;
     private JPanel orderPlacePanel;
-    public JPanel orderProgressPanel;
+    private JPanel orderProgressPanel;
     private JPanel orderFinishedPanel;
     private JPanel placeOrderButtonsPanel;
     public JScrollPane scrollPane_finished;
@@ -71,11 +66,11 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
     public static ArrayList<JButton> orderButtons = new ArrayList<>();
 
-    public static ArrayList<ProgressOrderInfo> progressOrderInfoArrayList = new ArrayList<>();
-    public static JPanel accessOrderProgressPanel;
+    private static JPanel accessOrderProgressPanel;
+    private static JPanel accessOrderFinishedPanel;
 
+    public static ArrayList<ProgressOrderInfo> progressOrderInfoArrayList = new ArrayList<>();
     public static ArrayList<FinishedOrderInfo> finishedOrderInfoArrayList = new ArrayList<>();
-    public static JPanel accessOrderFinishedPanel;
 
     public static void main(String[] args){
         EventQueue.invokeLater(new Runnable() {
@@ -122,17 +117,27 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         list_settingsMenuItems.setModel(settingsMenuItemsModel);
         list_itemsPlacedOrder.setModel(placedItemOrderModel);
 
-        MainFrame.accessOrderFinishedPanel = orderFinishedPanel;
-        MainFrame.accessOrderProgressPanel = orderProgressPanel;
         orderFinishedPanel.add(Box.createVerticalStrut(10));
         orderProgressPanel.add(Box.createVerticalStrut(10));
 
+        accessOrderProgressPanel = orderProgressPanel;
+        accessOrderFinishedPanel = orderFinishedPanel;
+
         cfgData = new CFGData();
         cfgData.loadCFG();
+        OrderInfo.loadData(this);
 
         syncData();
 
         createStopwatchUpdater();
+    }
+
+    public static JPanel getProgressOrderPanel(){
+        return accessOrderProgressPanel;
+    }
+
+    public static JPanel getFinishedOrderPanel(){
+        return accessOrderFinishedPanel;
     }
 
     private void syncData(){
@@ -195,12 +200,24 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         updateAutosaveClock();
     }
 
-    public void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
+    /**
+     * TODO Make this the proper way to add to parent panel
+     * @param progressOrderInfo
+     */
+    public static void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
         progressOrderInfoArrayList.add(progressOrderInfo);
+        progressOrderInfo.addToParentPanel();
+        System.out.println("Moved "+progressOrderInfo.getOrderNumber()+" to PROGRESS");
     }
 
-    public void addFinishedOrderInfo(FinishedOrderInfo finishedOrderInfo){
+    /**
+     * TODO Make this the proper way to add to parent panel
+     * @param finishedOrderInfo
+     */
+    public static void addFinishedOrderInfo(FinishedOrderInfo finishedOrderInfo){
         finishedOrderInfoArrayList.add(finishedOrderInfo);
+        finishedOrderInfo.addToParentPanel();
+        System.out.println("Moved "+finishedOrderInfo.getOrderNumber()+" to FINISHED");
     }
 
     /**
@@ -223,6 +240,9 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         placedItemOrderModel.remove(list_itemsPlacedOrder.getSelectedIndex());
     }
 
+    /**
+     * TODO Find out what this does
+     */
     public void loadOrders(){
         String path = System.getenv("APPDATA")+"\\ORN\\config.json";
         Reader reader;

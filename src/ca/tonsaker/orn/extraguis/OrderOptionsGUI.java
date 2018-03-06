@@ -60,7 +60,7 @@ public class OrderOptionsGUI implements ActionListener{
                     "Please include a delivery method!", "Error!", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        frame.addProgressOrderInfo(new ProgressOrderInfo(frame.orderProgressPanel, frame.placedItemOrderModel, isToStay, txtField_orderNumber.getText(),
+        frame.addProgressOrderInfo(new ProgressOrderInfo(frame.getProgressOrderPanel(), frame.placedItemOrderModel, isToStay, txtField_orderNumber.getText(),
                 txtField_phoneNumber.getText(), txtField_name.getText()));
         frame.placedItemOrderModel.clear();
         frame.setContentPane(frame.mainPanel);

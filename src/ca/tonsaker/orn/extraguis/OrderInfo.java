@@ -1,5 +1,6 @@
 package ca.tonsaker.orn.extraguis;
 
+import ca.tonsaker.orn.MainFrame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.Expose;
@@ -78,6 +79,21 @@ public abstract class OrderInfo implements ActionListener{
         @Expose private int state;
         @Expose private String[] orderList;
 
+        public long getElapsedTimeLong(){
+            int colonIdx = getElapsedTime().indexOf(':');
+            long newTime = Long.parseLong(getElapsedTime().substring(0, colonIdx)) * 60000;
+            newTime += Long.parseLong(getElapsedTime().substring(colonIdx+1)) * 1000;
+            return newTime;
+        }
+
+        public DefaultListModel<String> getOrderListModel() {
+            DefaultListModel<String> list = new DefaultListModel<>();
+            for(String item : getOrderList()) {
+                list.addElement(item);
+            }
+            return list;
+        }
+
         public String getDate() {
             return date;
         }
@@ -86,11 +102,11 @@ public abstract class OrderInfo implements ActionListener{
             this.date = date;
         }
 
-        public String getCustomerName() {
+        public String getOrderName() {
             return customerName;
         }
 
-        public void setCustomerName(String customerName) {
+        public void setOrderName(String customerName) {
             this.customerName = customerName;
         }
 
@@ -166,7 +182,7 @@ public abstract class OrderInfo implements ActionListener{
         this.parentPanel = parent;
 
         this.setOrderNumber(orderNumber);
-        if(!phoneNumber.isEmpty()) this.setPhoneNumber(phoneNumber);
+        if(phoneNumber != null && !phoneNumber.isEmpty()) this.setPhoneNumber(phoneNumber);
         this.setOrderName(orderName);
         this.setElapsedTime(elapsedTime);
 
@@ -183,7 +199,7 @@ public abstract class OrderInfo implements ActionListener{
 
         orderData = new OrderData();
         orderData.setToStay(isToStay);
-        orderData.setCustomerName(getOrderName());
+        orderData.setOrderName(getOrderName());
         orderData.setElapsedTime(String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()),
                 TimeUnit.MILLISECONDS.toSeconds(getElapsedTime()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()))));
@@ -195,9 +211,6 @@ public abstract class OrderInfo implements ActionListener{
             menuItems[idx] = orderListModel.toArray()[idx].toString();
         }
         orderData.setOrderList(menuItems);
-        //if(orderData.get);
-
-        addToParentPanel();
 
         setupClock();
         try{
@@ -205,6 +218,19 @@ public abstract class OrderInfo implements ActionListener{
         }catch (IOException e){
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Creates a populated JPanel that appends itself to the 'parent' parameter.<p>
+     * Contains information like Customer's name (optional), phone/order number, ordered items list,
+     * and the elapsed time since the order was placed. Also contains 2 stacked buttons that can be
+     * overriden.
+     *
+     * @param oData the data object to build the order info from
+     * @param parentPanel the JPanel where the OrderInfo panel will be displayed
+     */
+    public OrderInfo(JPanel parentPanel, OrderData oData){
+        this(parentPanel, oData.getOrderListModel(), oData.isToStay(), oData.getOrderNumber(), oData.getPhoneNumber(), oData.getOrderName(), oData.getElapsedTimeLong());
     }
 
     /**
@@ -221,6 +247,37 @@ public abstract class OrderInfo implements ActionListener{
      * Invoke to determine the action of pressing the bottom button.
      */
     protected abstract void bottomButtonAction();
+
+    public static void loadData(MainFrame frame){
+        String path = System.getenv("APPDATA") + "\\ORN\\orders\\";
+        Reader reader;
+        File fileDir = new File(path);
+        if(!fileDir.exists()){
+            fileDir.mkdirs();
+            return;
+        }
+        Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
+        try{
+            System.out.println(fileDir.listFiles().length);
+            for(File f : fileDir.listFiles()){
+                System.out.print(f.getName() + " "); //TODO Debug
+                if(f.getName().contains("order_") && f.getName().contains(".json")){
+                    reader = new InputStreamReader(new FileInputStream(f));
+                    OrderData orderData = gson.fromJson(reader, OrderData.class);
+                    switch(orderData.state){
+                        case OrderData.STATE_PROGRESS: MainFrame.addProgressOrderInfo(new ProgressOrderInfo(frame.getProgressOrderPanel(), orderData));
+                        case OrderData.STATE_FINISHED: MainFrame.addFinishedOrderInfo(new FinishedOrderInfo(frame.getFinishedOrderPanel(), orderData));
+                    }
+                }
+            }
+            System.out.println(); //TODO Debug
+
+        }catch(FileNotFoundException e){
+            e.printStackTrace();
+        }
+
+        System.out.println("Config file successfully loaded from \"" + path + "\"");
+    }
 
     public void saveData() throws IOException{
         orderData.setElapsedTime(String.format("%02d:%02d",
@@ -310,7 +367,6 @@ public abstract class OrderInfo implements ActionListener{
             toStayRadioButton.setBackground(new Color(60, 63, 65));
         }
         this.toStay = toStay;
-        System.out.println(toStay);
     }
 
     public String getPhoneNumber(){

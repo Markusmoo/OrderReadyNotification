@@ -22,6 +22,17 @@ public class ProgressOrderInfo extends OrderInfo{
         bButton.setBackground(new Color(65,12,13));
     }
 
+    public ProgressOrderInfo(JPanel parent, OrderData orderData){
+        super(parent, orderData);
+
+        aButton.setText("Order Ready");
+        aButton.setForeground(new Color(7,40,0));
+        aButton.setBackground(new Color(7,40,0));
+        bButton.setText("Cancel Order");
+        bButton.setForeground(new Color(65,12,13));
+        bButton.setBackground(new Color(65,12,13));
+    }
+
     @Override
     public void addToParentPanel() {
         parentPanel.add(orderInfoPanel);
@@ -65,7 +76,7 @@ public class ProgressOrderInfo extends OrderInfo{
     }
 
     private void sendToFinishedOrders(){
-        MainFrame.finishedOrderInfoArrayList.add(new FinishedOrderInfo(MainFrame.accessOrderFinishedPanel, this));
+        MainFrame.addFinishedOrderInfo(new FinishedOrderInfo(MainFrame.getFinishedOrderPanel(), this));
         selfDestruct();
     }
 
