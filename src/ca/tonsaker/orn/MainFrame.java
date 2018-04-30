@@ -180,7 +180,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         stopwatchUpdater.start();
     }
 
-    private void updateAutosaveClock(){
+    /*private void updateAutosaveClock(){
         autosaveClockCount--;
         if(autosaveClockCount <= 0){
             for(OrderInfo info : progressOrderInfoArrayList){
@@ -191,13 +191,13 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
             }
             autosaveClockCount = AUTOSAVE_CLOCK_MAX;
         }
-    }
+    }*/
 
     private void updateStopwatchTimers(){
         for(OrderInfo info : progressOrderInfoArrayList){
             info.updateClock();
         }
-        updateAutosaveClock();
+        //updateAutosaveClock();
     }
 
     /**
@@ -207,6 +207,11 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     public static void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
         progressOrderInfoArrayList.add(progressOrderInfo);
         progressOrderInfo.addToParentPanel();
+        try{
+            progressOrderInfo.saveData();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
         System.out.println("Moved "+progressOrderInfo.getOrderNumber()+" to PROGRESS");
     }
 
@@ -217,6 +222,11 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     public static void addFinishedOrderInfo(FinishedOrderInfo finishedOrderInfo){
         finishedOrderInfoArrayList.add(finishedOrderInfo);
         finishedOrderInfo.addToParentPanel();
+        try{
+            finishedOrderInfo.saveData();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
         System.out.println("Moved "+finishedOrderInfo.getOrderNumber()+" to FINISHED");
     }
 

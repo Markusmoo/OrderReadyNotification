@@ -12,8 +12,8 @@ import java.awt.*;
  */
 public class FinishedOrderInfo extends OrderInfo{
 
-    public FinishedOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime){
-        super(parent, list, toStay, orderNumber, phoneNumber, orderName, elapsedTime);
+    public FinishedOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime, long beginTime){
+        super(parent, list, toStay, orderNumber, phoneNumber, orderName, elapsedTime, beginTime);
 
         this.elapsedTime = elapsedTime;
         aButton.setText("Done");
@@ -51,7 +51,7 @@ public class FinishedOrderInfo extends OrderInfo{
     }
 
     public FinishedOrderInfo(JPanel newPanel, OrderInfo info){
-        this(newPanel, info.orderListModel, info.toStay, info.orderNumber, info.phoneNumber, info.orderName, info.elapsedTime);
+        this(newPanel, info.orderListModel, info.toStay, info.orderNumber, info.phoneNumber, info.orderName, info.elapsedTime, info.beginTime);
     }
 
     @Override

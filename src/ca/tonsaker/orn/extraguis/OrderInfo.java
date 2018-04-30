@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * TODO Fix ProgressOrderInfo state turning into FinishedOrderInfo state.
  * TODO Implement loading of orderinfos
  *
- * A Intellij Form that displays information on a placed order.
+ * A IntelliJ Form that displays information on a placed order.
  *
  * Created by Markus Tonsaker on 2017-12-02.
  */
@@ -71,6 +71,7 @@ public abstract class OrderInfo implements ActionListener{
         public static final int STATE_FINISHED = 1;
 
         @Expose private String date;
+        @Expose private long beginTime;
         @Expose private String customerName;
         @Expose private String orderNumber;
         @Expose private String phoneNumber;
@@ -80,9 +81,13 @@ public abstract class OrderInfo implements ActionListener{
         @Expose private String[] orderList;
 
         public long getElapsedTimeLong(){
-            int colonIdx = getElapsedTime().indexOf(':');
-            long newTime = Long.parseLong(getElapsedTime().substring(0, colonIdx)) * 60000;
-            newTime += Long.parseLong(getElapsedTime().substring(colonIdx+1)) * 1000;
+            return parseTime(getElapsedTime());
+        }
+
+        private long parseTime(String time){
+            int colonIdx = time.indexOf(':');
+            long newTime = Long.parseLong(time.substring(0, colonIdx)) * 60000;
+            newTime += Long.parseLong(time.substring(colonIdx+1)) * 1000;
             return newTime;
         }
 
@@ -101,6 +106,10 @@ public abstract class OrderInfo implements ActionListener{
         public void setDate(String date) {
             this.date = date;
         }
+
+        public long getBeginTime(){ return this.beginTime; }
+
+        public void setBeginTime(long beginTime){ this.beginTime = beginTime; }
 
         public String getOrderName() {
             return customerName;
@@ -170,9 +179,9 @@ public abstract class OrderInfo implements ActionListener{
      * @param list the items ordered
      * @param orderNumber order numberof the order
      * @param orderName name of the customer who the order belongs to
-     * @param elapsedTime the initial or final time elapsed since the order was placed
+     * @param elapsedTime the final time elapsed since the order was placed
      */
-    public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isToStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime){
+    public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isToStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime, long beginTime){
         orderListModel = new DefaultListModel<>();
         orderList.setModel(orderListModel);
         for(int idx = 0; idx < list.getSize(); idx++) {
@@ -205,7 +214,7 @@ public abstract class OrderInfo implements ActionListener{
                 TimeUnit.MILLISECONDS.toSeconds(getElapsedTime()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()))));
         orderData.setOrderNumber(getOrderNumber());
         orderData.setPhoneNumber(getPhoneNumber());
-        orderData.setDate(String.format("%02d:%02d:%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)));
+        orderData.setDate(String.format("%02d-%02d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)));
         String[] menuItems = new String[orderListModel.toArray().length];
         for(int idx = 0; idx < menuItems.length; idx++){
             menuItems[idx] = orderListModel.toArray()[idx].toString();
@@ -213,11 +222,6 @@ public abstract class OrderInfo implements ActionListener{
         orderData.setOrderList(menuItems);
 
         setupClock();
-        try{
-            saveData();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -230,7 +234,7 @@ public abstract class OrderInfo implements ActionListener{
      * @param parentPanel the JPanel where the OrderInfo panel will be displayed
      */
     public OrderInfo(JPanel parentPanel, OrderData oData){
-        this(parentPanel, oData.getOrderListModel(), oData.isToStay(), oData.getOrderNumber(), oData.getPhoneNumber(), oData.getOrderName(), oData.getElapsedTimeLong());
+        this(parentPanel, oData.getOrderListModel(), oData.isToStay(), oData.getOrderNumber(), oData.getPhoneNumber(), oData.getOrderName(), oData.getElapsedTimeLong(), oData.getBeginTime());
     }
 
     /**
@@ -260,18 +264,21 @@ public abstract class OrderInfo implements ActionListener{
         try{
             System.out.println(fileDir.listFiles().length);
             for(File f : fileDir.listFiles()){
-                System.out.print(f.getName() + " "); //TODO Debug
                 if(f.getName().contains("order_") && f.getName().contains(".json")){
                     reader = new InputStreamReader(new FileInputStream(f));
                     OrderData orderData = gson.fromJson(reader, OrderData.class);
-                    switch(orderData.state){
-                        case OrderData.STATE_PROGRESS: MainFrame.addProgressOrderInfo(new ProgressOrderInfo(frame.getProgressOrderPanel(), orderData));
-                        case OrderData.STATE_FINISHED: MainFrame.addFinishedOrderInfo(new FinishedOrderInfo(frame.getFinishedOrderPanel(), orderData));
+
+                    if(orderData.state == OrderData.STATE_PROGRESS){
+                        ProgressOrderInfo oi = new ProgressOrderInfo(frame.getProgressOrderPanel(), orderData);
+                        oi.savePath = f.getPath();
+                        MainFrame.addProgressOrderInfo(oi);
+                    }else if(orderData.state == OrderData.STATE_FINISHED){
+                        FinishedOrderInfo oi = new FinishedOrderInfo(frame.getFinishedOrderPanel(), orderData);
+                        oi.savePath = f.getPath();
+                        MainFrame.addFinishedOrderInfo(oi);
                     }
                 }
             }
-            System.out.println(); //TODO Debug
-
         }catch(FileNotFoundException e){
             e.printStackTrace();
         }
@@ -284,6 +291,7 @@ public abstract class OrderInfo implements ActionListener{
                 TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()),
                 TimeUnit.MILLISECONDS.toSeconds(getElapsedTime()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()))));
 
+        orderData.setBeginTime(beginTime);
 
         if(savePath == null || savePath.isEmpty()) {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
@@ -322,7 +330,7 @@ public abstract class OrderInfo implements ActionListener{
             long s = (elapsedTime / 1000) % 60;
             long m = (elapsedTime / (1000 * 60)) % 60;
             long h = (elapsedTime / (1000 * 60 * 60)) % 24;
-            txtField_elapsedTime.setText(String.format("%d:%02d:%02d", h, m, s));
+            txtField_elapsedTime.setText(String.format("%02d:%02d:%02d", h, m, s));
         }
     }
 

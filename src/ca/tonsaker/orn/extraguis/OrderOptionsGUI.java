@@ -11,6 +11,9 @@ import java.awt.event.ActionListener;
 
 /**
  * Created by Markus Tonsaker on 2017-12-12.
+ *
+ * TODO Clear all orders needs an "Are you sure?" dialog box.
+ * TODO Clear all orders does not delete %APPDATA% save files
  */
 public class OrderOptionsGUI implements ActionListener{
     private JPanel holderPanel;

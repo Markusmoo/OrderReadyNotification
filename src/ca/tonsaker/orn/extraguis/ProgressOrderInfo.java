@@ -4,6 +4,7 @@ import ca.tonsaker.orn.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 
 /**
  *
@@ -12,7 +13,7 @@ import java.awt.*;
 public class ProgressOrderInfo extends OrderInfo{
 
     public ProgressOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName){
-        super(parent, list, toStay, orderNumber, phoneNumber, orderName, 0);
+        super(parent, list, toStay, orderNumber, phoneNumber, orderName, 0, System.currentTimeMillis());
 
         aButton.setText("Order Ready");
         aButton.setForeground(new Color(7,40,0));
@@ -31,6 +32,8 @@ public class ProgressOrderInfo extends OrderInfo{
         bButton.setText("Cancel Order");
         bButton.setForeground(new Color(65,12,13));
         bButton.setBackground(new Color(65,12,13));
+
+        beginTime = orderData.getBeginTime();
     }
 
     @Override
@@ -72,6 +75,7 @@ public class ProgressOrderInfo extends OrderInfo{
     public void orderCancel(){
         if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you want to cancel this order?",
                 "Cancel Order?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
+        //TODO Delete save file
         selfDestruct();
     }
 
