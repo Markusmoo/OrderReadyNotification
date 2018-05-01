@@ -103,7 +103,7 @@ public class FinishedOrderInfo extends OrderInfo{
     public void orderSendSMS(){
         if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you would like to resend a SMS Notification?",
                 "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
-        MainFrame.twilioHandler.sendNotification(orderName, getPhoneNumber(), orderListModel);
+        MainFrame.twilioHandler.sendNotification(getOrderName(), getPhoneNumber(), orderListModel);
     }
 
     /**

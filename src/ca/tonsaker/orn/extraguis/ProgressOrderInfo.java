@@ -62,7 +62,7 @@ public class ProgressOrderInfo extends OrderInfo{
             }else if(i == 1){
                 sendToFinishedOrders();
             }else if(i == 0) {
-                MainFrame.twilioHandler.sendNotification(orderName, orderNumber, orderListModel);
+                MainFrame.twilioHandler.sendNotification(getOrderName(), getPhoneNumber(), orderListModel);
                 sendToFinishedOrders();
             }
         }else{
