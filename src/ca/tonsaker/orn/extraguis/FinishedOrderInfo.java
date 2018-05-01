@@ -4,6 +4,7 @@ import ca.tonsaker.orn.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 
 /**
  * TODO Fix when pressing DONE, carryout/toStay stays orange.
@@ -12,27 +13,8 @@ import java.awt.*;
  */
 public class FinishedOrderInfo extends OrderInfo{
 
-    public FinishedOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime, long beginTime){
-        super(parent, list, toStay, orderNumber, phoneNumber, orderName, elapsedTime, beginTime);
-
-        this.elapsedTime = elapsedTime;
-        aButton.setText("Done");
-        aButton.setForeground(new Color(60, 60, 0));
-        aButton.setBackground(new Color(60, 60, 0));
-        bButton.setText("Send SMS");
-        if(!phoneNumber.equals("")) {
-            bButton.setForeground(new Color(5, 0, 65));
-            bButton.setBackground(new Color(5, 0, 65));
-        }
-        txtField_elapsedTime.setEnabled(false); //TODO Test
-        if(phoneNumber.equals("")) {
-            bButton.setForeground(new Color(60, 63, 65));
-            bButton.setEnabled(false);
-        }
-    }
-
-    public FinishedOrderInfo(JPanel panel, OrderData orderData){
-        super(panel, orderData);
+    public FinishedOrderInfo(JPanel panel, OrderData orderData, String savePath){
+        super(panel, orderData, savePath);
 
         this.elapsedTime = orderData.getElapsedTimeLong();
         aButton.setText("Done");
@@ -48,10 +30,32 @@ public class FinishedOrderInfo extends OrderInfo{
             bButton.setForeground(new Color(60, 63, 65));
             bButton.setEnabled(false);
         }
+        if(orderData.getState() == OrderData.STATE_FINISHED_DONE) this.orderDone(false);
     }
 
     public FinishedOrderInfo(JPanel newPanel, OrderInfo info){
-        this(newPanel, info.orderListModel, info.toStay, info.orderNumber, info.phoneNumber, info.orderName, info.elapsedTime, info.beginTime);
+        super(newPanel, info.orderListModel, info.toStay, OrderData.STATE_FINISHED, info.orderNumber, info.phoneNumber, info.orderName, info.elapsedTime, info.beginTime, info.getSavePath());
+
+        this.elapsedTime = info.elapsedTime;
+        aButton.setText("Done");
+        aButton.setForeground(new Color(60, 60, 0));
+        aButton.setBackground(new Color(60, 60, 0));
+        bButton.setText("Send SMS");
+        if(!phoneNumber.equals("")) {
+            bButton.setForeground(new Color(5, 0, 65));
+            bButton.setBackground(new Color(5, 0, 65));
+        }
+        txtField_elapsedTime.setEnabled(false); //TODO Test
+        if(phoneNumber.equals("")) {
+            bButton.setForeground(new Color(60, 63, 65));
+            bButton.setEnabled(false);
+        }
+
+        try{
+            saveData();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -66,9 +70,17 @@ public class FinishedOrderInfo extends OrderInfo{
     /**
      * Greys out the OrderInfo panel to indicate that the order has been dealt with.
      */
-    public void orderDone(){
-        if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you are done with this order?",
-                "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
+    public void orderDone(boolean requireConfirmation){
+        if(requireConfirmation){
+            if (JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you are done with this order?",
+                    "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
+            orderData.setState(OrderData.STATE_FINISHED_DONE);
+            try{
+                saveData();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
         Color defaultColor = new Color(60,63,65);
         bButton.setBackground(defaultColor);
         bButton.setForeground(defaultColor);
@@ -91,7 +103,7 @@ public class FinishedOrderInfo extends OrderInfo{
     public void orderSendSMS(){
         if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you would like to resend a SMS Notification?",
                 "Cancel Order?", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
-        MainFrame.twilioHandler.sendNotification(orderName, orderNumber, orderListModel);
+        MainFrame.twilioHandler.sendNotification(orderName, getPhoneNumber(), orderListModel);
     }
 
     /**
@@ -106,7 +118,7 @@ public class FinishedOrderInfo extends OrderInfo{
      * Overrides topButtonAction() in OrderInfo.java class and calls the orderDone() function.
      */
     protected void topButtonAction() {
-        orderDone();
+        orderDone(true);
     }
 
     /**

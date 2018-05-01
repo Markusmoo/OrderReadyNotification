@@ -13,7 +13,7 @@ import java.io.File;
 public class ProgressOrderInfo extends OrderInfo{
 
     public ProgressOrderInfo(JPanel parent, DefaultListModel<String> list, boolean toStay, String orderNumber, String phoneNumber, String orderName){
-        super(parent, list, toStay, orderNumber, phoneNumber, orderName, 0, System.currentTimeMillis());
+        super(parent, list, toStay, OrderData.STATE_PROGRESS, orderNumber, phoneNumber, orderName, 0, System.currentTimeMillis(), null);
 
         aButton.setText("Order Ready");
         aButton.setForeground(new Color(7,40,0));
@@ -23,8 +23,8 @@ public class ProgressOrderInfo extends OrderInfo{
         bButton.setBackground(new Color(65,12,13));
     }
 
-    public ProgressOrderInfo(JPanel parent, OrderData orderData){
-        super(parent, orderData);
+    public ProgressOrderInfo(JPanel parent, OrderData orderData, String savePath){
+        super(parent, orderData, savePath);
 
         aButton.setText("Order Ready");
         aButton.setForeground(new Color(7,40,0));
@@ -75,7 +75,7 @@ public class ProgressOrderInfo extends OrderInfo{
     public void orderCancel(){
         if(JOptionPane.showConfirmDialog(orderInfoPanel.getParent(), "Are you sure you want to cancel this order?",
                 "Cancel Order?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) != 0) return;
-        //TODO Delete save file
+        this.archiveFile();
         selfDestruct();
     }
 

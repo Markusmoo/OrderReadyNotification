@@ -207,11 +207,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     public static void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
         progressOrderInfoArrayList.add(progressOrderInfo);
         progressOrderInfo.addToParentPanel();
-        try{
-            progressOrderInfo.saveData();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
         System.out.println("Moved "+progressOrderInfo.getOrderNumber()+" to PROGRESS");
     }
 
@@ -222,11 +217,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     public static void addFinishedOrderInfo(FinishedOrderInfo finishedOrderInfo){
         finishedOrderInfoArrayList.add(finishedOrderInfo);
         finishedOrderInfo.addToParentPanel();
-        try{
-            finishedOrderInfo.saveData();
-        }catch (IOException e){
-            e.printStackTrace();
-        }
         System.out.println("Moved "+finishedOrderInfo.getOrderNumber()+" to FINISHED");
     }
 
@@ -304,15 +294,22 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     }
 
     public void settingsClearAllOrders(){
-        for(Iterator<FinishedOrderInfo> i = finishedOrderInfoArrayList.iterator(); i.hasNext();){
-            FinishedOrderInfo o = i.next();
-            i.remove();
-            o.selfDestruct();
-        }
-        for(Iterator<ProgressOrderInfo> i = progressOrderInfoArrayList.iterator(); i.hasNext();){
-            ProgressOrderInfo o = i.next();
-            i.remove();
-            o.selfDestruct();
+        String objButtons[] = {"Yes","No"};
+        int PromptResult = JOptionPane.showOptionDialog(this,"Are you sure you want to clear all orders?",
+                "Are you sure?",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE,null,objButtons,objButtons[1]);
+        if(PromptResult == JOptionPane.YES_OPTION) {
+            for (Iterator<FinishedOrderInfo> i = finishedOrderInfoArrayList.iterator(); i.hasNext(); ) {
+                FinishedOrderInfo o = i.next();
+                i.remove();
+                o.archiveFile();
+                o.selfDestruct();
+            }
+            for (Iterator<ProgressOrderInfo> i = progressOrderInfoArrayList.iterator(); i.hasNext(); ) {
+                ProgressOrderInfo o = i.next();
+                i.remove();
+                o.archiveFile();
+                o.selfDestruct();
+            }
         }
     }
 

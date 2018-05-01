@@ -18,10 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * TODO "date": "2018:00:03", (Check to see if the month "00" actually changes..)
- * TODO Create a way to make this panel loadable from the DiskDrive
  * TODO Fix sending SMS message
  * TODO Fix ProgressOrderInfo state turning into FinishedOrderInfo state.
- * TODO Implement loading of orderinfos
  *
  * A IntelliJ Form that displays information on a placed order.
  *
@@ -40,8 +38,6 @@ public abstract class OrderInfo implements ActionListener{
     protected JLabel lbl_name;
     protected JLabel lbl_eTime;
     private JTextField txtField_phoneNumber;
-
-    protected String savePath;
 
     private ButtonGroup radioGroup;
     private JRadioButton toStayRadioButton;
@@ -67,8 +63,10 @@ public abstract class OrderInfo implements ActionListener{
 
     public class OrderData{
 
+        public static final int STATE_ARCHIVED = -1;
         public static final int STATE_PROGRESS = 0;
         public static final int STATE_FINISHED = 1;
+        public static final int STATE_FINISHED_DONE = 2;
 
         @Expose private String date;
         @Expose private long beginTime;
@@ -79,6 +77,8 @@ public abstract class OrderInfo implements ActionListener{
         @Expose private boolean isToStay;
         @Expose private int state;
         @Expose private String[] orderList;
+
+        private String savePath;
 
         public long getElapsedTimeLong(){
             return parseTime(getElapsedTime());
@@ -167,6 +167,14 @@ public abstract class OrderInfo implements ActionListener{
             this.orderList = orderList;
         }
 
+        public void setSavePath(String savePath){
+            this.savePath = savePath;
+        }
+
+        public String getSavePath(){
+            return savePath;
+        }
+
     }
 
     /** TODO add rest of order details
@@ -177,26 +185,32 @@ public abstract class OrderInfo implements ActionListener{
      *
      * @param parent the JPanel where the OrderInfo panel will be displayed
      * @param list the items ordered
-     * @param orderNumber order numberof the order
+     * @param isToStay is the order to stay or to go
+     * @param state state of order as of OrderInfo
+     * @param orderNumber order number of the order
+     * @param phoneNumber order phone number of customer
      * @param orderName name of the customer who the order belongs to
      * @param elapsedTime the final time elapsed since the order was placed
+     * @param beginTime system time of when the order was placed
+     * @param savePath file location of save
      */
-    public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isToStay, String orderNumber, String phoneNumber, String orderName, long elapsedTime, long beginTime){
+    public OrderInfo(JPanel parent, DefaultListModel<String> list, boolean isToStay, int state, String orderNumber, String phoneNumber,
+                     String orderName, long elapsedTime, long beginTime, String savePath){
         orderListModel = new DefaultListModel<>();
         orderList.setModel(orderListModel);
         for(int idx = 0; idx < list.getSize(); idx++) {
             orderListModel.addElement(list.getElementAt(idx));
         }
 
-        this.parentPanel = parent;
+        parentPanel = parent;
 
-        this.setOrderNumber(orderNumber);
+        setOrderNumber(orderNumber);
         if(phoneNumber != null && !phoneNumber.isEmpty()) this.setPhoneNumber(phoneNumber);
-        this.setOrderName(orderName);
-        this.setElapsedTime(elapsedTime);
+        setOrderName(orderName);
+        setElapsedTime(elapsedTime);
 
-        this.bButton.addActionListener(this);
-        this.aButton.addActionListener(this);
+        bButton.addActionListener(this);
+        aButton.addActionListener(this);
 
         radioGroup = new ButtonGroup();
         radioGroup.add(toStayRadioButton);
@@ -207,11 +221,13 @@ public abstract class OrderInfo implements ActionListener{
         Calendar cal = Calendar.getInstance();
 
         orderData = new OrderData();
+        orderData.setSavePath(savePath);
         orderData.setToStay(isToStay);
         orderData.setOrderName(getOrderName());
         orderData.setElapsedTime(String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()),
                 TimeUnit.MILLISECONDS.toSeconds(getElapsedTime()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()))));
+        orderData.setBeginTime(beginTime);
         orderData.setOrderNumber(getOrderNumber());
         orderData.setPhoneNumber(getPhoneNumber());
         orderData.setDate(String.format("%02d-%02d-%02d", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)));
@@ -219,9 +235,15 @@ public abstract class OrderInfo implements ActionListener{
         for(int idx = 0; idx < menuItems.length; idx++){
             menuItems[idx] = orderListModel.toArray()[idx].toString();
         }
+        orderData.setState(state);
         orderData.setOrderList(menuItems);
 
         setupClock();
+        try{
+            saveData();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -233,8 +255,8 @@ public abstract class OrderInfo implements ActionListener{
      * @param oData the data object to build the order info from
      * @param parentPanel the JPanel where the OrderInfo panel will be displayed
      */
-    public OrderInfo(JPanel parentPanel, OrderData oData){
-        this(parentPanel, oData.getOrderListModel(), oData.isToStay(), oData.getOrderNumber(), oData.getPhoneNumber(), oData.getOrderName(), oData.getElapsedTimeLong(), oData.getBeginTime());
+    public OrderInfo(JPanel parentPanel, OrderData oData, String savePath){
+        this(parentPanel, oData.getOrderListModel(), oData.isToStay(), oData.getState(), oData.getOrderNumber(), oData.getPhoneNumber(), oData.getOrderName(), oData.getElapsedTimeLong(), oData.getBeginTime(), savePath);
     }
 
     /**
@@ -252,6 +274,11 @@ public abstract class OrderInfo implements ActionListener{
      */
     protected abstract void bottomButtonAction();
 
+    /**
+     * Loads OrderInfo panels onto the frame.
+     *
+     * @param frame to load OrderInfos into.
+     */
     public static void loadData(MainFrame frame){
         String path = System.getenv("APPDATA") + "\\ORN\\orders\\";
         Reader reader;
@@ -269,13 +296,9 @@ public abstract class OrderInfo implements ActionListener{
                     OrderData orderData = gson.fromJson(reader, OrderData.class);
 
                     if(orderData.state == OrderData.STATE_PROGRESS){
-                        ProgressOrderInfo oi = new ProgressOrderInfo(frame.getProgressOrderPanel(), orderData);
-                        oi.savePath = f.getPath();
-                        MainFrame.addProgressOrderInfo(oi);
-                    }else if(orderData.state == OrderData.STATE_FINISHED){
-                        FinishedOrderInfo oi = new FinishedOrderInfo(frame.getFinishedOrderPanel(), orderData);
-                        oi.savePath = f.getPath();
-                        MainFrame.addFinishedOrderInfo(oi);
+                        MainFrame.addProgressOrderInfo(new ProgressOrderInfo(frame.getProgressOrderPanel(), orderData, f.getPath()));
+                    }else if(orderData.state == OrderData.STATE_FINISHED || orderData.state == OrderData.STATE_FINISHED_DONE){
+                        MainFrame.addFinishedOrderInfo(new FinishedOrderInfo(frame.getFinishedOrderPanel(), orderData, f.getPath()));
                     }
                 }
             }
@@ -286,37 +309,40 @@ public abstract class OrderInfo implements ActionListener{
         System.out.println("Config file successfully loaded from \"" + path + "\"");
     }
 
+    /**
+     * Save orderinfo to %appdata%\ORN\order\order_?????.json
+     * ????? = date and time of order.
+     *
+     * @throws IOException if file cannot be saved.
+     */
     public void saveData() throws IOException{
         orderData.setElapsedTime(String.format("%02d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()),
                 TimeUnit.MILLISECONDS.toSeconds(getElapsedTime()) - TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(getElapsedTime()))));
 
-        orderData.setBeginTime(beginTime);
-
-        if(savePath == null || savePath.isEmpty()) {
+        if(orderData.getSavePath() == null || orderData.getSavePath().isEmpty()) {
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
             Date date = new Date();
-            savePath = System.getenv("APPDATA") + "\\ORN\\orders\\order_" + dateFormat.format(date) + ".json";
+            orderData.setSavePath(System.getenv("APPDATA") + "\\ORN\\orders\\order_" + dateFormat.format(date) + ".json");
         }
 
-        File f = new File(savePath);
+        File f = new File(orderData.getSavePath());
         if(!f.exists()) f.getParentFile().mkdirs();
 
-        Writer writer = new OutputStreamWriter(new FileOutputStream(savePath));
+        Writer writer = new OutputStreamWriter(new FileOutputStream(orderData.getSavePath()));
         Gson gson = new GsonBuilder().setPrettyPrinting().excludeFieldsWithoutExposeAnnotation().create();
 
         writer.write(gson.toJson(orderData));
         writer.flush();
         writer.close();
 
-        System.out.println("Order file successfully saved to \"" + savePath + "\"");
+        System.out.println("Order file successfully saved to \"" + orderData.getSavePath() + "\"");
     }
 
     /**
      * Changes the elapsed time to 0 and sets up the elapsed time stopwatch.
      */
     public void setupClock(){
-        elapsedTime = 0;
         beginTime = System.currentTimeMillis();
         clockRunning = true;
     }
@@ -342,6 +368,18 @@ public abstract class OrderInfo implements ActionListener{
     }
 
     /**
+     * Archives file. OrderInfo panel will not show up when program started. File will still exist for record purposes.
+     */
+    public void archiveFile(){
+        this.orderData.setState(OrderData.STATE_ARCHIVED);
+        try{
+            this.saveData();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Deletes this panel from existence.
      */
     public void selfDestruct(){
@@ -351,6 +389,11 @@ public abstract class OrderInfo implements ActionListener{
         parentPanel.remove(invisibleSpace);
     }
 
+    /**
+     * Button action events.
+     *
+     * @param e triggering action event
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         Object src = e.getSource();
@@ -358,10 +401,16 @@ public abstract class OrderInfo implements ActionListener{
         if(src.equals(aButton)) topButtonAction();
     }
 
+    /**
+     * @return True if the order is to stay. False if to go.
+     */
     public boolean isToStay(){
         return toStay;
     }
 
+    /**
+     * @param toStay True if the order is "to stay". False if "to go".
+     */
     public void setIsToStay(boolean toStay){
         if(toStay){
            toStayRadioButton.setSelected(true);
@@ -377,11 +426,21 @@ public abstract class OrderInfo implements ActionListener{
         this.toStay = toStay;
     }
 
+    /**
+     *
+     * @return phone number of customer. Null if no phone number.
+     */
     public String getPhoneNumber(){
         return phoneNumber;
     }
 
     //TODO Improve number formatting for non 10 digit numbers
+
+    /**
+     * Formatting example: (111)-111-1111
+     *
+     * @param phoneNumber String representation of phone number.
+     */
     public void setPhoneNumber(String phoneNumber){
         String t = phoneNumber;
         t = "(" + phoneNumber.substring(0,3) + ")-" + phoneNumber.substring(3,6) + "-" +
@@ -439,6 +498,10 @@ public abstract class OrderInfo implements ActionListener{
         long s = (elapsedTime / 1000) % 60;
         long m = (elapsedTime / (1000 * 60)) % 60;
         long h = (elapsedTime / (1000 * 60 * 60)) % 24;
-        txtField_elapsedTime.setText(String.format("%d:%02d:%02d", h, m, s));
+        txtField_elapsedTime.setText(String.format("%02d:%02d:%02d", h, m, s));
+    }
+
+    public String getSavePath(){
+        return orderData.getSavePath();
     }
 }
