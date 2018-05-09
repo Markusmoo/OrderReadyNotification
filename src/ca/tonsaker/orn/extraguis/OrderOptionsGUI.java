@@ -12,10 +12,11 @@ import java.awt.event.ActionListener;
 /**
  * Created by Markus Tonsaker on 2017-12-12.
  *
- * TODO Clear all orders needs an "Are you sure?" dialog box.
- * TODO Clear all orders does not delete %APPDATA% save files
  */
 public class OrderOptionsGUI implements ActionListener{
+
+    private static final int PHONE_NUMBER_LENGTH = 10;
+
     private JPanel holderPanel;
     private JTextField txtField_orderNumber;
     private JTextField txtField_phoneNumber;
@@ -34,7 +35,7 @@ public class OrderOptionsGUI implements ActionListener{
         this.frame = frame;
 
         PlainDocument doc = (PlainDocument) txtField_phoneNumber.getDocument();
-        doc.setDocumentFilter(new NumberFilter(true, -1));
+        doc.setDocumentFilter(new NumberFilter(false, PHONE_NUMBER_LENGTH));
 
         PlainDocument doc2 = (PlainDocument) txtField_orderNumber.getDocument();
         doc2.setDocumentFilter(new NumberFilter(false, -1));
@@ -61,6 +62,11 @@ public class OrderOptionsGUI implements ActionListener{
         if(!deliveryMethodSelected){
             JOptionPane.showMessageDialog(frame,
                     "Please include a delivery method!", "Error!", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if(txtField_phoneNumber.getText().length() > 0 && txtField_phoneNumber.getText().length() < PHONE_NUMBER_LENGTH){
+            JOptionPane.showMessageDialog(frame,
+                    "Phone number needs to contain "+ PHONE_NUMBER_LENGTH + " digits!", "Error!", JOptionPane.ERROR_MESSAGE);
             return;
         }
         frame.addProgressOrderInfo(new ProgressOrderInfo(frame.getProgressOrderPanel(), frame.placedItemOrderModel, isToStay, txtField_orderNumber.getText(),

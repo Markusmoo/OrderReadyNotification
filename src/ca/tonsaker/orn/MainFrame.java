@@ -148,7 +148,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
         txtField_twilioPhoneNumber.setText(cfgData.PHONE_NUMBER);
         chkBX_displayOrder.setSelected(cfgData.SEND_ORDER);
         settingsMenuItemsModel.clear();
-        placeOrderButtonsPanel.removeAll(); //TODO May remove it self
+        placeOrderButtonsPanel.removeAll();
         for(String s : cfgData.MENU_ITEMS){
             settingsMenuItemsModel.addElement(s);
             addOrderButton(s);
@@ -201,7 +201,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     }
 
     /**
-     * TODO Make this the proper way to add to parent panel
      * @param progressOrderInfo
      */
     public static void addProgressOrderInfo(ProgressOrderInfo progressOrderInfo){
@@ -211,7 +210,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     }
 
     /**
-     * TODO Make this the proper way to add to parent panel
      * @param finishedOrderInfo
      */
     public static void addFinishedOrderInfo(FinishedOrderInfo finishedOrderInfo){
@@ -221,7 +219,6 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     }
 
     /**
-     * TODO Combine items
      * Calling this will add the item to the order list.
      *
      * @param item the name of the item to add to the order
@@ -241,9 +238,8 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
     }
 
     /**
-     * TODO Find out what this does
      */
-    public void loadOrders(){
+    public void loadConfig(){
         String path = System.getenv("APPDATA")+"\\ORN\\config.json";
         Reader reader;
         try{
@@ -266,26 +262,7 @@ public class MainFrame extends JFrame implements ActionListener, WindowListener{
 
     public void saveOrder(){
         if(list_itemsPlacedOrder.getModel().getSize() <= 0) return;
-        /*String orderNumber = JOptionPane.showInputDialog(this,
-                "Please enter Order Number OR Phone Number\n" +
-                "\nPlease type a # before phone number.\nExample: \"#604 123 1234\"", "Confirm Dialog",
-                JOptionPane.QUESTION_MESSAGE);
-        if(orderNumber == null) return;
-        boolean isPhoneNumber = orderNumber.contains("#");
-        if(isPhoneNumber) orderNumber = orderNumber.replace("#","");
-        orderNumber = orderNumber.replaceAll(" ", "");
-        if(!orderNumber.matches("[0-9]+")){
-            JOptionPane.showMessageDialog(this, "Please enter only numbers! Try again.",
-                    "Error: Numbers only", JOptionPane.ERROR_MESSAGE);
-            saveOrder();
-            return;
-        }*/
         new OrderOptionsGUI(this);
-        /*addProgressOrderInfo(new ProgressOrderInfo(orderProgressPanel, placedItemOrderModel, orderNumber,  //TODO Moved to OrderOptionsGUI.java
-                txtField_name.getText()));
-        txtField_name.setText("");
-        placedItemOrderModel.clear();
-        tabbedPane.setSelectedComponent(scrollPane_progress);*/
     }
 
     public void settingsAddNewItem(){

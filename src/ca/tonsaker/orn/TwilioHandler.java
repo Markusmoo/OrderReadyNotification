@@ -50,7 +50,7 @@ public class TwilioHandler implements ActionListener{
                 "- "+ cfgData.COMPANY_NAME);
 
         //TODO Format with Country code ie +1
-        MessageCreator msgCreator = Message.creator(new PhoneNumber("+1"+toNumber), new PhoneNumber(cfgData.PHONE_NUMBER), body.toString());
+        MessageCreator msgCreator = Message.creator(new PhoneNumber(toNumber), new PhoneNumber(cfgData.PHONE_NUMBER), body.toString());
         Message msg = msgCreator.create();
         lastMessage = msg;
         printSMSDetails(msg);

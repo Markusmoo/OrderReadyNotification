@@ -19,15 +19,17 @@ public class NumberFilter extends DocumentFilter{
         this.maxLength = maxLength;
     }
 
-    public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException{
+    public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr) throws BadLocationException{
 
         Document doc = fb.getDocument();
         StringBuilder sb = new StringBuilder();
         sb.append(doc.getText(0, doc.getLength()));
-        sb.insert(offset, string);
+        sb.insert(offset, text);
 
         if(test(sb.toString())){
-            super.insertString(fb, offset, string, attr);
+            if(maxLength < 0 || sb.toString().length() <= maxLength){
+                super.insertString(fb, offset, text, attr);
+            }
         }
     }
 
@@ -60,8 +62,10 @@ public class NumberFilter extends DocumentFilter{
         sb.append(doc.getText(0, doc.getLength()));
         sb.replace(offset, offset + length, text);
 
-        if(test(sb.toString()) && (maxLength < 0 || text.length() <= maxLength)){
-            super.replace(fb, offset, length, text, attrs);
+        if(test(sb.toString())){
+            if(maxLength < 0 || sb.toString().length() <= maxLength){
+                super.replace(fb, offset, length, text, attrs);
+            }
         }
 
     }
@@ -72,10 +76,7 @@ public class NumberFilter extends DocumentFilter{
         StringBuilder sb = new StringBuilder();
         sb.append(doc.getText(0, doc.getLength()));
         sb.delete(offset, offset + length);
-
-        if(maxLength < 0 || sb.toString().length() <= maxLength){
-            super.remove(fb, offset, length);
-        }
+        super.remove(fb, offset, length);
 
     }
 }
